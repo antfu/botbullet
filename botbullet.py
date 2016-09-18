@@ -7,8 +7,10 @@ from pushbullet import Pushbullet
 from threading import Thread
 from pprint import pprint
 
+
 class ThreadAlreadyExistsError(Exception):
     pass
+
 
 class IndexedDict(dict):
     '''
@@ -31,7 +33,9 @@ class IndexedDict(dict):
     def __setattr__(self, key, value):
         self[key] = value
 
+
 class BotbulletThread(Thread):
+
     def __init__(self, switch=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.switch = switch
@@ -41,6 +45,7 @@ class BotbulletThread(Thread):
 
     def __repr__(self):
         return '<BotbulletThread({})>'.format('Alive' if self.switch[0] else 'Stopped')
+
 
 class Botbullet(Pushbullet):
 
@@ -54,7 +59,21 @@ class Botbullet(Pushbullet):
         except pushbullet.InvalidKeyError:
             return self.new_device(name)
 
-    def listen_pushes(self, callback=None, modified_after=None, filter=None, sleep_interval=2, switch=None, log=None):
+    # Override for supporting source device
+    def push_note(self, title, body, target_device=None, source_device=None, chat=None, email=None, channel=None):
+        data = {"type": "note", "title": title, "body": body}
+
+        data.update(Pushbullet._recipient(None, chat, email, channel))
+
+        if target_device:
+            data["target_device_iden"] = target_device.device_iden
+        if source_device:
+            data["source_device_iden"] = source_device.device_iden
+
+        return self._push(data)
+
+
+    def listen_pushes(self, callback=None, modified_after=None, filter=None, sleep_interval=2, switch=None, log=None, debug=False):
         def noop(*args):
             pass
 
@@ -64,14 +83,14 @@ class Botbullet(Pushbullet):
         # This allows stopping listening from outer scope
         switch = switch or [True]
 
-        log('Pushes listening Start.')
+        debug and log('Pushes listening Start.')
         while True:
             pushes = self.get_pushes(modified_after=last_time)
             if filter:
                 pushes = filter(pushes)
             if len(pushes):
                 length = len(pushes)
-                log('{} pushes received.'.format(length))
+                debug and log('{} pushes received.'.format(length))
                 for i in range(length):
                     event_obj = IndexedDict(
                         {'listening': True, 'remain_pushes': length - i - 1, 'sender': self})
@@ -80,7 +99,7 @@ class Botbullet(Pushbullet):
                     if not event_obj['listening']:
                         switch[0] = False  # Escape the listening loop
             if not switch[0]:
-                log('Pushes listening end.')
+                debug and log('Pushes listening end.')
                 return
             last_time = time.time()
             time.sleep(sleep_interval)
