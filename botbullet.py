@@ -7,6 +7,8 @@ from pushbullet import Pushbullet
 from threading import Thread
 from pprint import pprint
 
+class ThreadAlreadyExistsError(Exception):
+    pass
 
 class IndexedDict(dict):
     '''
@@ -30,22 +32,21 @@ class IndexedDict(dict):
         self[key] = value
 
 class BotbulletThread(Thread):
-    def __init__(self, alias=None, switch=None, *args, **kwargs):
+    def __init__(self, switch=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.alias = alias
         self.switch = switch
 
     def stop(self):
         self.switch[0] = False
 
     def __repr__(self):
-        return '<BotbulletThread({}, {})>'.format(self.alias, 'Alive' if self.switch[0] else 'Stopped')
+        return '<BotbulletThread({})>'.format('Alive' if self.switch[0] else 'Stopped')
 
 class Botbullet(Pushbullet):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.listen_threads = []
+        self.listening_thread = None
 
     def get_or_create_device(self, name):
         try:
@@ -84,26 +85,23 @@ class Botbullet(Pushbullet):
             last_time = time.time()
             time.sleep(sleep_interval)
 
-    def listen_pushes_asynchronously(self, *args, alias=None, **kwargs):
+    def listen_pushes_asynchronously(self, *args, **kwargs):
         switch = [True]
 
         kwargs['switch'] = switch
-        thread = BotbulletThread(alias=alias, switch=switch, target=self.listen_pushes, args=args, kwargs=kwargs)
+        thread = BotbulletThread(switch=switch, target=self.listen_pushes, args=args, kwargs=kwargs)
 
-        self.listen_threads.append(thread)
+        if self.listening_thread and self.listening_thread.is_alive():
+            raise ThreadAlreadyExistsError('Thread already exists. You may want to execute "stop_listening" first.')
+        self.listening_thread = thread
         thread.start()
         return thread
 
-    def stop_listening(self, thread=None):
-        if thread:
-            if thread.is_alive():
-                thread.stop()
-            self.listen_threads.remove(thread)
-        else:
-            for thread in self.listen_threads:
-                if thread.is_alive():
-                    thread.stop()
-            self.listen_threads = []
+    def stop_listening(self):
+        if self.listening_thread:
+            if self.listening_thread.is_alive():
+                self.listening_thread.stop()
+            self.listen_threads = None
 
     def __del__(self):
         self.stop_listening()
