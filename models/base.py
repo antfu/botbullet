@@ -6,6 +6,6 @@ class BaseModel(Model):
 
     def handler(self, body, push, event_obj, monopolize=False):
         if body == 'models':
-            self.bot.reply('\n'.join(bot.models.keys()), title="Models")
+            self.bot.reply('\n'.join(self.bot.models.keys()), title="Models")
         elif body == 'clear':
             self.bot.clear_session()
