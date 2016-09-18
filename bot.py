@@ -15,11 +15,18 @@ class Bot:
         self.device = self.bullet.get_or_create_device(self.device_name)
         self.models = {}
         self.debug = debug
+        self.pushes_in_session = []
         self.monopolizing = None
         self.bullet.listen_pushes_asynchronously(
             callback=lambda *args: self.callback(*args))
 
-    def use(self, model, model_key):
+    def clear_session(self):
+        for push in self.pushes_in_session:
+            self.bullet.delete_push(push['iden'])
+        self.pushes_in_session = []
+
+    def use(self, model, model_key=None):
+        model_key = model_key or model.name
         if model_key in self.models.keys():
             warnings.warn("duplicated", FutureWarning)
         model.bot = self
@@ -28,7 +35,8 @@ class Bot:
     def reply(self, body, title='', *args, **kwargs):
         kwargs['body'] = body
         kwargs['title'] = title
-        self.bullet.push_note(*args, **kwargs, source_device=self.device)
+        push = self.bullet.push_note(*args, **kwargs, source_device=self.device)
+        self.pushes_in_session.append(push)
 
     def monopolize(self, model):
         if self.debug:
@@ -40,6 +48,7 @@ class Bot:
         if direction == 'self':
             target_device_iden = push.get('target_device_iden', None)
             if target_device_iden == self.device.device_iden:
+                self.pushes_in_session.append(push)
                 if self.debug:
                     print('[to Bot] ', end='')
                 body = push.get('body', '').strip()
