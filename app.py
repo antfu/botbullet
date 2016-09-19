@@ -5,6 +5,9 @@ from shutil import copy2 as copy
 from codecs import open
 from botbullet import Bot, IndexedDict
 
+if os.name == 'nt':
+    os.system('chcp 65001')
+
 def load_configs(path, default_path):
     if not os.path.exists(path):
         copy(default_path, path)
