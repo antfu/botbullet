@@ -9,6 +9,8 @@ class BaseModule(Module):
             push.reply('\n'.join(self.bot.modules.keys()), title="Modules")
         elif body == 'clear':
             push.clear_session()
+        elif body == 'clear all':
+            self.bot.bullet.delete_pushes()
         elif body == 'reload':
             self.bot.reload_modules()
             push.reply('Reload finished',title='Bot')

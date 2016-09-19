@@ -37,12 +37,21 @@ class Bot:
             self.bullet.delete_push(push['iden'])
         self.pushes_in_session = []
 
+
+    def unuse(self):
+        self.modules = {}
+
     def use(self, module, module_key=None, override=False):
         module_key = module_key or module.name
         if not override and module_key in self.modules.keys():
             raise ModuleConflictError
         module.bot = self
+
         self.modules[module_key] = module
+
+        if module.alias:
+            for alias in module.alias:
+                self.modules[alias] = module
 
     def load_modules(self, module_list, modules_configs):
         for module_name in module_list:
@@ -63,6 +72,7 @@ class Bot:
 
     def reload_modules(self):
         self.immerse_func = None
+        self.unuse()
         for name, obj in self.modules_info.items():
             try:
                 print('Reloading module', name, '... ', end='')

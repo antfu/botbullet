@@ -4,7 +4,7 @@ from botbullet import Module
 class HelloModule(Module):
     def __init__(self, **kwargs):
         # Set the command of this module to 'hello'
-        super().__init__('hello', **kwargs)
+        super().__init__('hello', alias=['hey', 'hi'], **kwargs)
 
     # Handle incoming pushes which start with 'hello' command
     def handler(self, body, push):

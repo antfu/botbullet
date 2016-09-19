@@ -4,7 +4,7 @@ from botbullet import Module
 class TranslatorModule(Module):
 
     def __init__(self, **kwargs):
-        super().__init__(name='trans', **kwargs)
+        super().__init__(name='trans', alias=['t'], **kwargs)
         self.appid = self.configures.get_set('appid',  '20160919000028921')
         self.appkey = self.configures.get_set('appkey', 'inOmkEzClYvvseJEfDV8')
 
