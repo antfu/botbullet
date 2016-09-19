@@ -1,35 +1,13 @@
 import inspect
 import time
-import asyncio
 import types
 from threading import Thread
 from pprint import pprint
 
 import pushbullet
 from pushbullet import Pushbullet
+from .utils import IndexedDict
 from .errors import *
-
-class IndexedDict(dict):
-    '''
-    Simple dict but support access as x.y style.
-    '''
-
-    def __init__(self, d=None, **kw):
-        super(IndexedDict, self).__init__(**kw)
-        if d:
-            for k, v in d.items():
-                self[k] = IndexedDict(v) if isinstance(v, dict) else v
-
-    def __getattr__(self, key):
-        try:
-            return self[key]
-        except KeyError:
-            raise AttributeError(
-                r"'IndexedDict' object has no attribute '%s'" % key)
-
-    def __setattr__(self, key, value):
-        self[key] = value
-
 
 class BotbulletThread(Thread):
 
@@ -49,6 +27,12 @@ class Botbullet(Pushbullet):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.listening_thread = None
+
+    def get_device_by_iden(self, device_iden):
+        for device in self.devices:
+            if device.device_iden == device_iden:
+                return device
+        return None
 
     def get_or_create_device(self, name):
         try:

@@ -41,9 +41,7 @@ class Bot:
         self.modules[module_key] = module
 
     def reply(self, body, title='', *args, **kwargs):
-        kwargs['body'] = body
-        kwargs['title'] = title
-        push = self.bullet.push_note(*args, **kwargs, source_device=self.device)
+        push = self.bullet.push_note(title=title, body=body, *args, **kwargs, source_device=self.device)
         self.pushes_in_session.append(push)
 
     def monopolize(self, module):
@@ -65,19 +63,27 @@ class Bot:
                     module = self.monopolizing
                     # Remove monopolizing
                     self.monopolizing = None
+                    module.push = push
                     module.handler(body, push, event_obj, monopolize=True)
+                    module.push = None
+
                 else:
                     key = body.split(' ')[0].lower()
                     body = ' '.join(body.split(' ')[1:])
                     if key in self.modules.keys():
-                        self.modules[key].handler(body, push, event_obj)
+                        module = self.modules[key]
+                        module.push = push
+                        module.handler(body, push, event_obj)
+                        module.push = None
 
         elif direction == 'incoming':
-            print('[Incoming] ', end='')
+            if self.debug:
+                print('[Incoming] ', end='')
         elif direction == 'outcoming':
             pass
         else:
-            print('Unexcepted direction', direction)
+            if self.debug:
+                print('Unexcepted direction', direction)
 
         if self.debug:
             print('> {}: {}'.format(push.sender_name, push.body))
