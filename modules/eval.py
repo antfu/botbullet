@@ -44,16 +44,18 @@ class EvalModule(Module):
         if result:
             self.bot.reply(result)
 
-    def handler(self, body, push, event_obj, monopolize=False):
-        if monopolize:
-            if not body or body.lower() == 'exit':
-                self.bot.reply('Leaving monopolize','Eval')
-            else:
-                self.reply(body)
-                self.monopolize()
+    def immerse_handler(self, body, push):
+        if not body or body.lower() == 'exit':
+            push.reply('Leaving immerse mode','Eval')
+            push.delete()
         else:
-            if not body:
-                self.monopolize()
-                self.bot.reply('Entering monopolize','Eval')
-            else:
-                self.reply(body)
+            self.reply(body)
+            self.immerse(self.immerse_handler)
+
+    def handler(self, body, push):
+        if not body:
+            self.immerse(self.immerse_handler)
+            push.reply('Entering immerse mode','Eval')
+            push.delete()
+        else:
+            self.reply(body)

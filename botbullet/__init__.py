@@ -8,6 +8,7 @@ from .__version__ import __version__
 from .botbullet import Botbullet
 from .bot import Bot
 from .module import Module
+from .push import Push
 from .errors import *
 
 Botbullet = Botbullet

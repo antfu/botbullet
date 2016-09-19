@@ -6,7 +6,7 @@ from pprint import pprint
 
 import pushbullet
 from pushbullet import Pushbullet
-from .utils import IndexedDict
+from .push import Push
 from .errors import *
 
 class BotbulletThread(Thread):
@@ -59,12 +59,7 @@ class Botbullet(Pushbullet):
                 length = len(pushes)
                 debug and log('{} pushes received.'.format(length))
                 for i in range(length):
-                    event_obj = IndexedDict(
-                        {'listening': True, 'remain_pushes': length - i - 1, 'sender': self})
-                    push = IndexedDict(pushes[i])
-                    callback(push, event_obj)
-                    if not event_obj['listening']:
-                        switch[0] = False  # Escape the listening loop
+                    callback(Push(pushes[i], self))
             if not switch[0]:
                 debug and log('Pushes listening end.')
                 return

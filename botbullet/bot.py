@@ -18,7 +18,7 @@ class Bot:
         self.modules = {}
         self.debug = debug
         self.pushes_in_session = []
-        self.monopolizing = None
+        self.immerse_func = None
 
     def start(self):
         self.bullet.listen_pushes_asynchronously(
@@ -44,12 +44,12 @@ class Bot:
         push = self.bullet.push_note(title=title, body=body, *args, **kwargs, source_device=self.device)
         self.pushes_in_session.append(push)
 
-    def monopolize(self, module):
+    def immerse(self, func):
         if self.debug:
-            print('module {} is monopolizing'.format(str(module)))
-        self.monopolizing = module
+            print('Function {} is immersing'.format(str(func)))
+        self.immerse_func = func
 
-    def callback(self, push, event_obj):
+    def callback(self, push):
         direction = push.get('direction', None)
         if direction == 'self':
             target_device_iden = push.get('target_device_iden', None)
@@ -58,23 +58,19 @@ class Bot:
                 if self.debug:
                     print('[to Bot] ', end='')
                 body = push.get('body', '').strip()
+
                 # If there is a module taking control of the bot
-                if self.monopolizing:
-                    module = self.monopolizing
-                    # Remove monopolizing
-                    self.monopolizing = None
-                    module.push = push
-                    module.handler(body, push, event_obj, monopolize=True)
-                    module.push = None
+                if self.immerse_func:
+                    func = self.immerse_func
+                    self.immerse_func = None
+                    func(body, push)
 
                 else:
                     key = body.split(' ')[0].lower()
                     body = ' '.join(body.split(' ')[1:])
                     if key in self.modules.keys():
                         module = self.modules[key]
-                        module.push = push
-                        module.handler(body, push, event_obj)
-                        module.push = None
+                        module.handler(body, push)
 
         elif direction == 'incoming':
             if self.debug:
@@ -86,7 +82,7 @@ class Bot:
                 print('Unexcepted direction', direction)
 
         if self.debug:
-            print('> {}: {}'.format(push.sender_name, push.body))
+            print('> {}: {}'.format(push['sender_name'], push['body']))
             pprint(push)
 
     def __del__(self):
