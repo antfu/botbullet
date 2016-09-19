@@ -7,7 +7,7 @@ import traceback
 from shutil import copy2 as copy
 from codecs import open
 from botbullet import Bot, IndexedDict
-from bilateral_configs_py import BilateralConfigs
+from biconfigs import BiConfigs
 
 default_configs = {
     "api_token": "",
@@ -21,7 +21,7 @@ if os.name == 'nt':
 
 def run():
     print('Starting Botbullet...')
-    configs = BilateralConfigs(configs_path, default_value=default_configs)
+    configs = BiConfigs(configs_path, default_value=default_configs)
     modules_configs = configs.get_set('modules_configs', {})
     debug = configs.get_set('debug', False)
     api_token = configs.get('api_token', None)

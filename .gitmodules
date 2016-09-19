@@ -1,6 +1,6 @@
 [submodule "pushbullet.py"]
 	path = pushbullet.py
 	url = https://github.com/antfu/pushbullet.py
-[submodule "bilateral_configs_py"]
-	path = bilateral_configs_py
-	url = https://github.com/antfu/bilateral_configs.py
+[submodule "biconfigs"]
+	path = biconfigs
+	url = https://github.com/antfu/biconfigs
