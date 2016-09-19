@@ -6,7 +6,7 @@ class Module:
         self.basic_help = basic_help
         self.helpes = helpes or {}
         self.bot = bot
-        self.configures = configures or {}
+        self.configures = configures
 
     def immerse(self, func):
         return self.bot.immerse(func)

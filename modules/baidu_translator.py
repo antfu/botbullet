@@ -5,9 +5,14 @@ class TranslatorModule(Module):
 
     def __init__(self, **kwargs):
         super().__init__(name='trans', **kwargs)
+        self.appid  = self.configures.get_set('appid',  '20160919000028921')
+        self.appkey = self.configures.get_set('appkey', 'inOmkEzClYvvseJEfDV8')
+
+    def translate(self, body, **kwargs):
+        return baidu_translate(body, self.appid, self.appkey, **kwargs)
 
     def handler(self, body, push):
-        translated, action = baidu_translate(body)
+        translated, action = self.translate(body)
         if not action:
             translated = '# Translate failed'
         push.reply(translated)
@@ -21,17 +26,13 @@ import hashlib
 import random
 from pprint import pprint
 
-BAIDU_TRANS_API_APPID = '20160919000028921'
-BAIDU_TRANS_API_KEY = 'inOmkEzClYvvseJEfDV8'
 BAIDU_TRANS_API_URL = 'http://api.fanyi.baidu.com/api/trans/vip/translate?appid={appid}&q={source}&from={fromlang}&to={tolang}&salt={salt}&sign={sign}'
 
-def baidu_translate(source, fromlang='auto', tolang='en'):
+def baidu_translate(source, appid, apikey, fromlang='auto', tolang='en'):
     quoted_source = urllib.request.quote(source)
     salt = str(random.randint(32768, 65536))
-    appid = BAIDU_TRANS_API_APPID
-    secret_key = BAIDU_TRANS_API_KEY
     # get sign
-    sign = appid + source + salt + secret_key
+    sign = appid + source + salt + apikey
     sign = hashlib.md5(sign.encode()).hexdigest()
 
     url = BAIDU_TRANS_API_URL.format(appid=appid, source=quoted_source, fromlang=fromlang, tolang=tolang, salt=salt, sign=sign)

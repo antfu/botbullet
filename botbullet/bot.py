@@ -55,7 +55,8 @@ class Bot:
         try:
             func(body, push)
         except Exception:
-            traceback.print_exc(file=sys.stdout)
+            if self.debug:
+                traceback.print_exc(file=sys.stdout)
 
     def callback(self, push):
         direction = push.direction
@@ -101,8 +102,11 @@ class Bot:
                 print('Unexcepted direction', direction)
 
         if self.debug:
-            print('> {}: {}'.format(push['sender_name'], push['body']))
-            pprint(push)
+            try:
+                print('> {}: {}'.format(push['sender_name'], push['body']))
+                pprint(push)
+            except:
+                pass
 
     def __del__(self):
         self.stop()
