@@ -25,8 +25,8 @@ class Push(dict):
     def reply(self, body, title='', *args, **kwargs):
         target_device = None
         source_device = None
-        target_device_iden = self.target_device_iden
-        source_device_iden = self.source_device_iden
+        target_device_iden = self.get('target_device_iden', None)
+        source_device_iden = self.get('source_device_iden', None)
         if target_device_iden:
             target_device = FakeDevice(target_device_iden)
         if source_device_iden:
