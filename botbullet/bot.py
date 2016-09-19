@@ -1,8 +1,9 @@
 import warnings
-from botbullet import Botbullet
-from model import Model
 from pprint import pprint
-from errors import *
+
+from .botbullet import Botbullet
+from .module import Module
+from .errors import *
 
 DEFAULT_DEVICE_NAME = 'Botbullet'
 
@@ -14,7 +15,7 @@ class Bot:
         self.bullet = Botbullet(api_token)
         self.device_name = device_name or DEFAULT_DEVICE_NAME
         self.device = self.bullet.get_or_create_device(self.device_name)
-        self.models = {}
+        self.modules = {}
         self.debug = debug
         self.pushes_in_session = []
         self.monopolizing = None
@@ -32,12 +33,12 @@ class Bot:
             self.bullet.delete_push(push['iden'])
         self.pushes_in_session = []
 
-    def use(self, model, model_key=None, override=False):
-        model_key = model_key or model.name
-        if not override and model_key in self.models.keys():
+    def use(self, module, module_key=None, override=False):
+        module_key = module_key or module.name
+        if not override and module_key in self.modules.keys():
             raise ModuleConflictError
-        model.bot = self
-        self.models[model_key] = model
+        module.bot = self
+        self.modules[module_key] = module
 
     def reply(self, body, title='', *args, **kwargs):
         kwargs['body'] = body
@@ -45,10 +46,10 @@ class Bot:
         push = self.bullet.push_note(*args, **kwargs, source_device=self.device)
         self.pushes_in_session.append(push)
 
-    def monopolize(self, model):
+    def monopolize(self, module):
         if self.debug:
-            print('Model {} is monopolizing'.format(str(model)))
-        self.monopolizing = model
+            print('module {} is monopolizing'.format(str(module)))
+        self.monopolizing = module
 
     def callback(self, push, event_obj):
         direction = push.get('direction', None)
@@ -59,17 +60,17 @@ class Bot:
                 if self.debug:
                     print('[to Bot] ', end='')
                 body = push.get('body', '').strip()
-                # If there is a model taking control of the bot
+                # If there is a module taking control of the bot
                 if self.monopolizing:
-                    model = self.monopolizing
+                    module = self.monopolizing
                     # Remove monopolizing
                     self.monopolizing = None
-                    model.handler(body, push, event_obj, monopolize=True)
+                    module.handler(body, push, event_obj, monopolize=True)
                 else:
                     key = body.split(' ')[0].lower()
                     body = ' '.join(body.split(' ')[1:])
-                    if key in self.models.keys():
-                        self.models[key].handler(body, push, event_obj)
+                    if key in self.modules.keys():
+                        self.modules[key].handler(body, push, event_obj)
 
         elif direction == 'incoming':
             print('[Incoming] ', end='')

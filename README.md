@@ -3,9 +3,6 @@ A human-bot interface powered by [Pushbullet](https://www.pushbullet.com)
 
 ## Requirements
 - [randomchars/pushbullet.py](https://github.com/randomchars/pushbullet.py)
-```sh
-pip install -r pip-requirements.txt
-```
 
 ## Get started
 ```python

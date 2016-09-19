@@ -1,6 +1,6 @@
 
 
-class Model:
+class Module:
     def __init__(self, name):
         self.name = name.lower().strip()
         self.bot = None

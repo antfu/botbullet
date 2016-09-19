@@ -1,6 +1,6 @@
-from model import Model
+from botbullet import Module
 
-class EvalModel(Model):
+class EvalModule(Module):
     def __init__(self):
         super().__init__('eval')
         # make a list of safe functions

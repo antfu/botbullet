@@ -1,11 +1,11 @@
-from model import Model
+from botbullet import Module
 
-class BaseModel(Model):
+class BaseModule(Module):
     def __init__(self):
         super().__init__('bot')
 
     def handler(self, body, push, event_obj, monopolize=False):
-        if body == 'models':
-            self.bot.reply('\n'.join(self.bot.models.keys()), title="Models")
+        if body == 'modules':
+            self.bot.reply('\n'.join(self.bot.modules.keys()), title="Modules")
         elif body == 'clear':
             self.bot.clear_session()

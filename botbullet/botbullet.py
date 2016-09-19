@@ -1,15 +1,13 @@
-import sys
-sys.path.insert(0, "pushbullet.py")
-
 import inspect
 import time
 import asyncio
 import types
-import pushbullet
-from pushbullet import Pushbullet
 from threading import Thread
 from pprint import pprint
-from errors import *
+
+import pushbullet
+from pushbullet import Pushbullet
+from .errors import *
 
 class IndexedDict(dict):
     '''
