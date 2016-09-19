@@ -2,26 +2,12 @@
 A human-bot interface powered by [Pushbullet](https://www.pushbullet.com)
 
 ## Requirements
-- [randomchars/pushbullet.py](https://github.com/randomchars/pushbullet.py)
+- [randomchars/pushbullet.py](https://github.com/randomchars/pushbullet.py) <sup>( included as git submodule )</sup>
 
-## Get started
-```python
-from botbullet import Botbullet
-
-bullect = Botbullet(your_api_token)
-
-def callback(push, event_obj):
-  # You can deal with 'push' here as you want
-  print('> {}: {}'.format(push.sender_name, push.body))
-
-# Start listening pushes
-bullect.listen_pushes_asynchronously(callback)
-```
-When pushes come up
-```
-> Anthony Fu: Hello
-> Anthony Fu: World
-```
+## [Wiki](https://github.com/antfu/botbullet/wiki)
+For usage and docs, please refer to [Wiki](https://github.com/antfu/botbullet/wiki)
+- [Get Started](https://github.com/antfu/botbullet/wiki/Get-Started)
+- [Write a Module](https://github.com/antfu/botbullet/wiki/Write-a-Module)
 
 ## More
 For more details about pushbullet, you may like to have a look for:
