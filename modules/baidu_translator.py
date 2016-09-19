@@ -5,17 +5,25 @@ class TranslatorModule(Module):
 
     def __init__(self, **kwargs):
         super().__init__(name='trans', **kwargs)
-        self.appid  = self.configures.get_set('appid',  '20160919000028921')
+        self.appid = self.configures.get_set('appid',  '20160919000028921')
         self.appkey = self.configures.get_set('appkey', 'inOmkEzClYvvseJEfDV8')
 
     def translate(self, body, **kwargs):
         return baidu_translate(body, self.appid, self.appkey, **kwargs)
 
     def handler(self, body, push):
-        translated, action = self.translate(body)
+        title = ''
+        plices = body.strip().split(' ')
+        tolang = 'en'
+        if len(plices) >= 3 and plices[-2].lower() == 'to' and plices[-1].lower() in TOLANGS:
+            tolang = plices[-1].lower()
+            body = ' '.join(plices[:-2])
+        translated, action, _from, _to = self.translate(body, tolang=tolang)
         if not action:
             translated = '# Translate failed'
-        push.reply(translated)
+        elif _from and _to:
+            title = _from.upper() + ' ⇀ ' + _to.upper()
+        push.reply(translated, title=title)
 
 export = TranslatorModule
 
@@ -27,6 +35,10 @@ import random
 from pprint import pprint
 
 BAIDU_TRANS_API_URL = 'http://api.fanyi.baidu.com/api/trans/vip/translate?appid={appid}&q={source}&from={fromlang}&to={tolang}&salt={salt}&sign={sign}'
+TOLANGS = ['zh', 'en', 'yue', 'wyw', 'jp', 'kor', 'fra', 'spa', 'th', 'ara',
+           'ru', 'pt', 'de', 'it', 'el', 'nl', 'pl', 'bul', 'est', 'dan', 'fin',
+           'cs', 'rom', 'slo', 'swe', 'hu', 'cht']
+
 
 def baidu_translate(source, appid, apikey, fromlang='auto', tolang='en'):
     quoted_source = urllib.request.quote(source)
@@ -35,7 +47,8 @@ def baidu_translate(source, appid, apikey, fromlang='auto', tolang='en'):
     sign = appid + source + salt + apikey
     sign = hashlib.md5(sign.encode()).hexdigest()
 
-    url = BAIDU_TRANS_API_URL.format(appid=appid, source=quoted_source, fromlang=fromlang, tolang=tolang, salt=salt, sign=sign)
+    url = BAIDU_TRANS_API_URL.format(
+        appid=appid, source=quoted_source, fromlang=fromlang, tolang=tolang, salt=salt, sign=sign)
     # request
     r = requests.get(url)
     data = json.loads(r.text)
@@ -51,4 +64,8 @@ def baidu_translate(source, appid, apikey, fromlang='auto', tolang='en'):
         translated = source
         action = False
 
-    return translated, action
+    print(data)
+    _from = data.get('from', '')
+    _to = data.get('to', '')
+
+    return translated, action, _from, _to

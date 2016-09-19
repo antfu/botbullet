@@ -1,6 +1,7 @@
 import warnings
 import sys
 import traceback
+import importlib
 from pprint import pprint
 
 from .botbullet import Botbullet
@@ -18,6 +19,7 @@ class Bot:
         self.device_name = device_name or DEFAULT_DEVICE_NAME
         self.device = self.bullet.get_or_create_device(self.device_name)
         self.modules = {}
+        self.modules_info = {}
         self.debug = debug
         self.pushes_in_session = []
         self.immerse_func = None
@@ -42,8 +44,50 @@ class Bot:
         module.bot = self
         self.modules[module_key] = module
 
+    def load_modules(self, module_list, modules_configs):
+        for module_name in module_list:
+            try:
+                print('Loading module', module_name, '... ', end='')
+                module = importlib.import_module('modules.' + module_name)
+                cls = module.export
+                instance = cls(bot=self, configures=modules_configs.get_set(module_name, {}))
+                self.use(instance)
+                self.modules_info[module_name] = {"module": module,
+                                                  "cls": cls, "instance": instance}
+            except Exception as e:
+                print('Failed  <', str(e), '>')
+                if self.debug:
+                    traceback.print_exc(file=sys.stdout)
+            else:
+                print('OK')
+
+    def reload_modules(self):
+        self.immerse_func = None
+        for name, obj in self.modules_info.items():
+            try:
+                print('Reloading module', name, '... ', end='')
+                module = obj['module']
+                importlib.reload(module)
+                old_instance = obj['instance']
+                cls = module.export
+                configures = old_instance.configures
+                new_instance = cls(bot=self, configures=configures)
+
+                obj['module'] = module
+                obj['cls'] = module
+                obj['instance'] = new_instance
+
+                self.use(new_instance, override=True)
+            except Exception as e:
+                print('Failed  <', str(e), '>')
+                if self.debug:
+                    traceback.print_exc(file=sys.stdout)
+            else:
+                print('OK')
+
     def reply(self, body, title='', *args, **kwargs):
-        push = self.bullet.push_note(title=title, body=body, *args, **kwargs, source_device=self.device)
+        push = self.bullet.push_note(
+            title=title, body=body, *args, **kwargs, source_device=self.device)
         self.pushes_in_session.append(push)
 
     def immerse(self, func):
@@ -90,7 +134,6 @@ class Bot:
                     else:
                         # TODO
                         pass
-
 
         elif direction == 'incoming':
             if self.debug:

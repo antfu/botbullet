@@ -37,21 +37,7 @@ def run():
     bot = Bot(api_token, debug=debug)
     modules = {}
 
-    for module_name in configs.modules:
-        try:
-            print('Loading module', module_name, '... ', end='')
-            module = importlib.import_module('modules.' + module_name)
-            cls = module.export
-            instance = cls(bot=bot, configures=modules_configs.get_set(module_name,{}))
-            bot.use(instance)
-            modules[module_name] = {"module": module,
-                                    "cls": cls, "instance": instance}
-        except Exception as e:
-            print('Failed  <', str(e), '>')
-            if debug:
-                traceback.print_exc(file=sys.stdout)
-        else:
-            print('OK')
+    bot.load_modules(configs.modules, modules_configs)
 
     def signal_handler(signal, frame):
         #print('You pressed Ctrl+C!')
