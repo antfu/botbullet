@@ -2,9 +2,9 @@ from botbullet import Module
 
 # Create a custom module
 class HelloModule(Module):
-    def __init__(self):
+    def __init__(self, **kwargs):
         # Set the command of this module to 'hello'
-        super().__init__('hello')
+        super().__init__('hello', **kwargs)
 
     # Handle incoming pushes which start with 'hello' command
     def handler(self, body, push):

@@ -1,8 +1,8 @@
 from botbullet import Module
 
 class EvalModule(Module):
-    def __init__(self):
-        super().__init__('eval')
+    def __init__(self, **kwargs):
+        super().__init__('eval', **kwargs)
         # make a list of safe functions
         safe_list = ['math','acos', 'asin', 'atan', 'atan2',
                      'ceil', 'cos', 'cosh', 'degrees', 'e', 'exp',

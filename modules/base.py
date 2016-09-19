@@ -1,8 +1,8 @@
 from botbullet import Module
 
 class BaseModule(Module):
-    def __init__(self):
-        super().__init__('bot')
+    def __init__(self, **kwargs):
+        super().__init__('bot', **kwargs)
 
     def handler(self, body, push):
         if body == 'modules':

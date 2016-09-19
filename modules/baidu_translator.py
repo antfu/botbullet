@@ -3,8 +3,8 @@ from botbullet import Module
 
 class TranslatorModule(Module):
 
-    def __init__(self):
-        super().__init__('trans')
+    def __init__(self, **kwargs):
+        super().__init__(name='trans', **kwargs)
 
     def handler(self, body, push):
         translated, action = baidu_translate(body)
