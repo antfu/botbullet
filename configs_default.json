@@ -1,5 +1,0 @@
-{
-  "api_token": "",
-  "modules": ["hello","base","eval"],
-  "debug": false
-}
