@@ -59,3 +59,5 @@ class EvalModule(Module):
             push.delete()
         else:
             self.reply(body)
+
+export = EvalModule

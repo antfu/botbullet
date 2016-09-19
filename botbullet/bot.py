@@ -1,4 +1,6 @@
 import warnings
+import sys
+import traceback
 from pprint import pprint
 
 from .botbullet import Botbullet
@@ -25,8 +27,8 @@ class Bot:
             callback=lambda *args: self.callback(*args))
 
     def stop(self):
-        if self.bullect:
-            self.bullect.stop_listening()
+        if self.bullet:
+            self.bullet.stop_listening()
 
     def clear_session(self):
         for push in self.pushes_in_session:
@@ -49,28 +51,45 @@ class Bot:
             print('Function {} is immersing'.format(str(func)))
         self.immerse_func = func
 
+    def call(self, func, body, push):
+        try:
+            func(body, push)
+        except Exception:
+            traceback.print_exc(file=sys.stdout)
+
     def callback(self, push):
-        direction = push.get('direction', None)
+        direction = push.direction
         if direction == 'self':
-            target_device_iden = push.get('target_device_iden', None)
+            target_device_iden = push.target_device_iden
+
+            # Only get messages sent to Bot
             if target_device_iden == self.device.device_iden:
                 self.pushes_in_session.append(push)
                 if self.debug:
                     print('[to Bot] ', end='')
                 body = push.get('body', '').strip()
 
-                # If there is a module taking control of the bot
+                # If there is a function taking the control of bot
                 if self.immerse_func:
                     func = self.immerse_func
                     self.immerse_func = None
-                    func(body, push)
+                    self.call(func, body, push)
 
                 else:
+                    if not body:
+                        return
                     key = body.split(' ')[0].lower()
                     body = ' '.join(body.split(' ')[1:])
+
                     if key in self.modules.keys():
                         module = self.modules[key]
-                        module.handler(body, push)
+                        self.call(module.handler, body, push)
+
+                    # There is no matched modules, start CoR
+                    else:
+                        # TODO
+                        pass
+
 
         elif direction == 'incoming':
             if self.debug:

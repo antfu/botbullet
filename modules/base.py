@@ -9,3 +9,5 @@ class BaseModule(Module):
             push.reply('\n'.join(self.bot.modules.keys()), title="Modules")
         elif body == 'clear':
             push.clear_session()
+
+export = BaseModule

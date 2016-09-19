@@ -9,6 +9,7 @@ from .botbullet import Botbullet
 from .bot import Bot
 from .module import Module
 from .push import Push
+from .utils import IndexedDict
 from .errors import *
 
 Botbullet = Botbullet
