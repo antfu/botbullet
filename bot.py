@@ -2,6 +2,7 @@ import warnings
 from botbullet import Botbullet
 from model import Model
 from pprint import pprint
+from errors import *
 
 DEFAULT_DEVICE_NAME = 'Botbullet'
 
@@ -17,18 +18,24 @@ class Bot:
         self.debug = debug
         self.pushes_in_session = []
         self.monopolizing = None
+
+    def start(self):
         self.bullet.listen_pushes_asynchronously(
             callback=lambda *args: self.callback(*args))
+
+    def stop(self):
+        if self.bullect:
+            self.bullect.stop_listening()
 
     def clear_session(self):
         for push in self.pushes_in_session:
             self.bullet.delete_push(push['iden'])
         self.pushes_in_session = []
 
-    def use(self, model, model_key=None):
+    def use(self, model, model_key=None, override=False):
         model_key = model_key or model.name
-        if model_key in self.models.keys():
-            warnings.warn("duplicated", FutureWarning)
+        if not override and model_key in self.models.keys():
+            raise ModuleConflictError
         model.bot = self
         self.models[model_key] = model
 
@@ -76,4 +83,4 @@ class Bot:
             pprint(push)
 
     def __del__(self):
-        self.bullect and self.bullect.stop_listening()
+        self.stop()

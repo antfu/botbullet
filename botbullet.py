@@ -1,3 +1,6 @@
+import sys
+sys.path.insert(0, "pushbullet.py")
+
 import inspect
 import time
 import asyncio
@@ -6,11 +9,7 @@ import pushbullet
 from pushbullet import Pushbullet
 from threading import Thread
 from pprint import pprint
-
-
-class ThreadAlreadyExistsError(Exception):
-    pass
-
+from errors import *
 
 class IndexedDict(dict):
     '''
@@ -58,20 +57,6 @@ class Botbullet(Pushbullet):
             return self.get_device(name)
         except pushbullet.InvalidKeyError:
             return self.new_device(name)
-
-    # Override for supporting source device
-    def push_note(self, title, body, target_device=None, source_device=None, chat=None, email=None, channel=None):
-        data = {"type": "note", "title": title, "body": body}
-
-        data.update(Pushbullet._recipient(None, chat, email, channel))
-
-        if target_device:
-            data["target_device_iden"] = target_device.device_iden
-        if source_device:
-            data["source_device_iden"] = source_device.device_iden
-
-        return self._push(data)
-
 
     def listen_pushes(self, callback=None, modified_after=None, filter=None, sleep_interval=2, switch=None, log=None, debug=False):
         def noop(*args):
