@@ -13,7 +13,7 @@ DEFAULT_DEVICE_NAME = 'Botbullet'
 
 class Bot:
 
-    def __init__(self, api_token, device_name=None, debug=False):
+    def __init__(self, api_token, device_name=None, module_configs=None, debug=False):
         self.api_token = api_token
         self.bullet = Botbullet(api_token)
         self.device_name = device_name or DEFAULT_DEVICE_NAME
@@ -21,6 +21,7 @@ class Bot:
         self.modules = {}
         self.modules_info = {}
         self.debug = debug
+        self.module_configs = module_configs
         self.pushes_in_session = []
         self.immerse_func = None
 
@@ -53,16 +54,31 @@ class Bot:
             for alias in module.alias:
                 self.modules[alias] = module
 
-    def load_modules(self, module_list, modules_configs):
+    def use_module(self, name, module):
+        cls = module.export
+        configures = self.module_configs.get_set(name, {})
+        instance = cls(bot=self, configures=configures)
+        module_obj = {"module": module,"cls": cls, "instance": instance}
+
+        def reload():
+            importlib.reload(module)
+            cls = module.export
+            instance = cls(bot=self, configures=configures)
+            module_obj['cls'] = cls
+            module_obj['instance'] = instance
+            self.use(instance, override=True)
+
+        module_obj['reload'] = reload
+        self.modules_info[name] = module_obj
+        self.use(instance)
+
+    def load_modules(self, module_list):
         for module_name in module_list:
             try:
                 print('Loading module', module_name, '... ', end='')
                 module = importlib.import_module('modules.' + module_name)
-                cls = module.export
-                instance = cls(bot=self, configures=modules_configs.get_set(module_name, {}))
-                self.use(instance)
-                self.modules_info[module_name] = {"module": module,
-                                                  "cls": cls, "instance": instance}
+                self.use_module(module_name, module)
+
             except Exception as e:
                 print('Failed  <', str(e), '>')
                 if self.debug:
@@ -76,18 +92,8 @@ class Bot:
         for name, obj in self.modules_info.items():
             try:
                 print('Reloading module', name, '... ', end='')
-                module = obj['module']
-                importlib.reload(module)
-                old_instance = obj['instance']
-                cls = module.export
-                configures = old_instance.configures
-                new_instance = cls(bot=self, configures=configures)
+                obj['reload']()
 
-                obj['module'] = module
-                obj['cls'] = module
-                obj['instance'] = new_instance
-
-                self.use(new_instance, override=True)
             except Exception as e:
                 print('Failed  <', str(e), '>')
                 if self.debug:
