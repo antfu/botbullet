@@ -4,7 +4,7 @@ import traceback
 import importlib
 from pprint import pprint
 
-from .botbullet import Botbullet
+from .bullet import Botbullet
 from .module import Module
 from .errors import *
 
@@ -37,7 +37,6 @@ class Bot:
         for push in self.pushes_in_session:
             self.bullet.delete_push(push['iden'])
         self.pushes_in_session = []
-
 
     def unuse(self):
         self.modules = {}
@@ -96,7 +95,6 @@ class Bot:
 
     def reload_modules(self):
         self.immerse_func = None
-        self.unuse()
         for name, obj in self.modules_info.items():
             try:
                 print('Reloading module', name, '... ', end='')

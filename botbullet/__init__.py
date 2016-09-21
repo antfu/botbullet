@@ -1,15 +1,20 @@
 import sys
 import os
-pushbullet_path = os.path.abspath('pushbullet.py')
+pushbullet_path = os.path.abspath(os.path.join(__file__,'..','pushbullet.py'))
 if os.path.exists(pushbullet_path):
     sys.path.insert(0, pushbullet_path)
+if os.path.exists('../biconfigs'):
+    sys.path.insert(0, '..')
 
 from .__version__ import __version__
-from .botbullet import Botbullet
+from .bullet import Botbullet
 from .bot import Bot
 from .module import Module
 from .push import Push
 from .utils import IndexedDict
 from .errors import *
+from .app import App, InitConfigs
+from biconfigs import BiConfigs, BiDict
 
 Botbullet = Botbullet
+App = App
