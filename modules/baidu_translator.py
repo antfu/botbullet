@@ -1,5 +1,6 @@
 from botbullet import Module
 
+DEFAULT_TOLANG = 'en'
 
 class TranslatorModule(Module):
 
@@ -7,23 +8,49 @@ class TranslatorModule(Module):
         super().__init__(name='trans', alias=['t'], **kwargs)
         self.appid = self.configures.get_set('appid',  '20160919000028921')
         self.appkey = self.configures.get_set('appkey', 'inOmkEzClYvvseJEfDV8')
+        self.tolang = DEFAULT_TOLANG
 
     def translate(self, body, **kwargs):
         return baidu_translate(body, self.appid, self.appkey, **kwargs)
 
-    def handler(self, body, push):
-        title = ''
+    def body_normalize(self, body):
+        body = body.strip()
         plices = body.strip().split(' ')
-        tolang = 'en'
-        if len(plices) >= 3 and plices[-2].lower() == 'to' and plices[-1].lower() in TOLANGS:
+        tolang = self.tolang
+        if len(plices) >= 2 and plices[-2].lower() == 'to' and plices[-1].lower() in TOLANGS:
             tolang = plices[-1].lower()
             body = ' '.join(plices[:-2])
+
+        return body, tolang
+
+    def translate_and_reply(self, body, push, tolang=None, display_title=True):
+        tolang = tolang or self.tolang
         translated, action, _from, _to = self.translate(body, tolang=tolang)
         if not action:
             translated = '# Translate failed'
         elif _from and _to:
             title = _from.upper() + ' ⇀ ' + _to.upper()
         push.reply(translated, title=title)
+
+    def immerse_handler(self, body, push):
+        if body.strip().lower() == '#exit':
+            push.reply(title='Translator', body= 'Exiting Immerse Mode.')
+            return
+
+        self.translate_and_reply(body, push, display_title=False)
+        self.immerse(self.immerse_handler)
+
+
+    def handler(self, body, push):
+        title = ''
+        body, tolang = self.body_normalize(body)
+        if not body:
+            self.tolang = tolang
+            self.immerse(self.immerse_handler)
+            push.reply(title='Immerse Mode',
+                       body= 'Translating to {}.\n'.format(self.tolang.upper())
+                           + 'You can send "#exit" to exit immerse mode.')
+        self.translate_and_reply(body, push, tolang)
 
 export = TranslatorModule
 
@@ -64,7 +91,7 @@ def baidu_translate(source, appid, apikey, fromlang='auto', tolang='en'):
         translated = source
         action = False
 
-    print(data)
+    #print(data)
     _from = data.get('from', '')
     _to = data.get('to', '')
 
