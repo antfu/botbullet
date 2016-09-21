@@ -2,7 +2,9 @@ from botbullet import Module
 
 DEFAULT_TOLANG = 'en'
 
+
 class TranslatorModule(Module):
+    name = 'trans'
 
     def __init__(self, **kwargs):
         super().__init__(name='trans', alias=['t'], **kwargs)
@@ -34,12 +36,11 @@ class TranslatorModule(Module):
 
     def immerse_handler(self, body, push):
         if body.strip().lower() == '#exit':
-            push.reply(title='Translator', body= 'Exiting Immerse Mode.')
+            push.reply(title='Translator', body='Exiting Immerse Mode.')
             return
 
         self.translate_and_reply(body, push, display_title=False)
         self.immerse(self.immerse_handler)
-
 
     def handler(self, body, push):
         title = ''
@@ -48,8 +49,8 @@ class TranslatorModule(Module):
             self.tolang = tolang
             self.immerse(self.immerse_handler)
             push.reply(title='Immerse Mode',
-                       body= 'Translating to {}.\n'.format(self.tolang.upper())
-                           + 'You can send "#exit" to exit immerse mode.')
+                       body='Translating to {}.\n'.format(self.tolang.upper())
+                       + 'You can send "#exit" to exit immerse mode.')
         self.translate_and_reply(body, push, tolang)
 
 export = TranslatorModule
@@ -91,7 +92,7 @@ def baidu_translate(source, appid, apikey, fromlang='auto', tolang='en'):
         translated = source
         action = False
 
-    #print(data)
+    # print(data)
     _from = data.get('from', '')
     _to = data.get('to', '')
 

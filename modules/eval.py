@@ -1,16 +1,19 @@
 from botbullet import Module
 
+
 class EvalModule(Module):
+    name = 'eval'
+
     def __init__(self, **kwargs):
         super().__init__('eval', **kwargs)
         # make a list of safe functions
-        safe_list = ['math','acos', 'asin', 'atan', 'atan2',
+        safe_list = ['math', 'acos', 'asin', 'atan', 'atan2',
                      'ceil', 'cos', 'cosh', 'degrees', 'e', 'exp',
                      'fabs', 'floor', 'fmod', 'frexp', 'hypot', 'ldexp', 'log',
                      'log10', 'modf', 'pi', 'pow', 'radians', 'sin',
                      'sinh', 'sqrt', 'tan', 'tanh']
         # use the list to filter the local namespace
-        safe_dict = dict([ (k, locals().get(k, None)) for k in safe_list ])
+        safe_dict = dict([(k, locals().get(k, None)) for k in safe_list])
         # add any needed builtins back in.
         safe_dict['abs'] = abs
 
@@ -46,7 +49,7 @@ class EvalModule(Module):
 
     def immerse_handler(self, body, push):
         if not body or body.lower() == 'exit':
-            push.reply('Leaving immerse mode','Eval')
+            push.reply('Leaving immerse mode', 'Eval')
             push.delete()
         else:
             self.reply(body)
@@ -55,7 +58,7 @@ class EvalModule(Module):
     def handler(self, body, push):
         if not body:
             self.immerse(self.immerse_handler)
-            push.reply('Entering immerse mode','Eval')
+            push.reply('Entering immerse mode', 'Eval')
             push.delete()
         else:
             self.reply(body)

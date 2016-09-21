@@ -54,23 +54,31 @@ class Bot:
             for alias in module.alias:
                 self.modules[alias] = module
 
+    def __load_module(self, module, override=False):
+        clses = module.export
+        if not isinstance(clses, list):
+            clses = [clses]
+        cls_obj = {}
+
+        for cls in clses:
+            configures = self.module_configs.get_set(cls.name, {})
+            instance = cls(bot=self, configures=configures)
+            cls_obj[cls.name] = {"cls": cls, "instance": instance}
+            self.use(instance, override=override)
+
+        return cls_obj
+
     def use_module(self, name, module):
-        cls = module.export
-        configures = self.module_configs.get_set(name, {})
-        instance = cls(bot=self, configures=configures)
-        module_obj = {"module": module,"cls": cls, "instance": instance}
+        module_obj = {'module': module}
+        module_obj['class'] = self.__load_module(module)
 
         def reload():
+            del(module_obj['class'])
             importlib.reload(module)
-            cls = module.export
-            instance = cls(bot=self, configures=configures)
-            module_obj['cls'] = cls
-            module_obj['instance'] = instance
-            self.use(instance, override=True)
+            module_obj['class'] = self.__load_module(module, override=True)
 
         module_obj['reload'] = reload
         self.modules_info[name] = module_obj
-        self.use(instance)
 
     def load_modules(self, module_list):
         for module_name in module_list:
