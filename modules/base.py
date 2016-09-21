@@ -4,9 +4,6 @@ from botbullet import Module
 class BaseModule(Module):
     name = 'bot'
 
-    def __init__(self, **kwargs):
-        super().__init__('bot', **kwargs)
-
     def handler(self, body, push):
         if body == 'clear':
             push.clear_session()
@@ -16,10 +13,8 @@ class BaseModule(Module):
 
 class MoudlesModule(Module):
     name = 'modules'
-
-    def __init__(self, **kwargs):
-        super().__init__('modules', **kwargs)
-
+    alias = ['m']
+    
     def handler(self, body, push):
         if body == '':
             push.reply('\n'.join(self.bot.modules.keys()), title="Modules")

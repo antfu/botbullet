@@ -5,9 +5,9 @@ DEFAULT_TOLANG = 'en'
 
 class TranslatorModule(Module):
     name = 'trans'
+    alias = ['t', 'translate']
 
-    def __init__(self, **kwargs):
-        super().__init__(name='trans', alias=['t'], **kwargs)
+    def init(self):
         self.appid = self.configures.get_set('appid',  '20160919000028921')
         self.appkey = self.configures.get_set('appkey', 'inOmkEzClYvvseJEfDV8')
         self.tolang = DEFAULT_TOLANG
