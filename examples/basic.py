@@ -3,15 +3,16 @@ import os
 import signal
 from termcolor import cprint
 
+
 try:
+    sys.path.insert(0, os.path.abspath('.'))
     import botbullet
 except ImportError:
     try:
-        sys.path.insert(0, os.path.abspath('.'))
+        sys.path.insert(0, os.path.abspath('..'))
         import botbullet
     except ImportError:
         try:
-            sys.path.insert(0, os.path.abspath('..'))
             import botbullet
         except ImportError:
             print('Unable to import "botbullet", did you install it?')

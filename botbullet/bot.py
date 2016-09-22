@@ -83,7 +83,7 @@ class Bot:
         for module_name in module_list:
             try:
                 print('Loading module', module_name, '... ', end='')
-                module = importlib.import_module('modules.' + module_name)
+                module = importlib.import_module('.modules.' + module_name, __name__.rsplit('.',1)[0])
                 self.use_module(module_name, module)
 
             except Exception as e:
