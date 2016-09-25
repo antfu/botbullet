@@ -1,3 +1,0 @@
-[submodule "pushbullet.py"]
-	path = pushbullet.py
-	url = https://github.com/antfu/pushbullet.py

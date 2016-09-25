@@ -1,6 +1,9 @@
 import inspect
 import time
 import types
+import sys
+import traceback
+
 from threading import Thread
 from pprint import pprint
 
@@ -24,9 +27,34 @@ class BotbulletThread(Thread):
 
 class Botbullet(Pushbullet):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, modified_after=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.listening_thread = None
+        self.modified_after = modified_after or time.time()
+
+    @staticmethod
+    def _recipient(device=None, chat=None, email=None, channel=None, source_device=None):
+        data = dict()
+
+        if device:
+            data["device_iden"] = device.device_iden
+        elif chat:
+            data["email"] = chat.email
+        elif email:
+            data["email"] = email
+        elif channel:
+            data["channel_tag"] = channel.channel_tag
+        if source_device:
+            data["source_device_iden"] = source_device.device_iden
+
+        return data
+
+    def push_note(self, title, body, device=None, chat=None, email=None, channel=None, source_device=None):
+        data = {"type": "note", "title": title, "body": body}
+
+        data.update(Botbullet._recipient(device, chat, email, channel, source_device))
+
+        return self._push(data)
 
     def get_device_by_iden(self, device_iden):
         for device in self.devices:
@@ -45,25 +73,28 @@ class Botbullet(Pushbullet):
             pass
 
         log = log or print
-        last_time = modified_after or time.time()
         callback = callback or noop
         # This allows stopping listening from outer scope
         switch = switch or [True]
 
         debug and log('Pushes listening Start.')
         while True:
-            pushes = self.get_pushes(modified_after=last_time)
-            if filter:
-                pushes = filter(pushes)
-            if len(pushes):
-                length = len(pushes)
-                debug and log('{} pushes received.'.format(length))
-                for i in range(length):
-                    callback(Push(pushes[i], self))
-            if not switch[0]:
-                debug and log('Pushes listening end.')
-                return
-            last_time = time.time()
+            try:
+                pushes = self.get_pushes(modified_after=self.modified_after)
+                if filter:
+                    pushes = filter(pushes)
+                if len(pushes):
+                    length = len(pushes)
+                    debug and log('{} pushes received.'.format(length))
+                    for i in range(length):
+                        callback(Push(pushes[i], self))
+                    self.modified_after = pushes[-1].get('modified', None) or time.time()
+                if not switch[0]:
+                    debug and log('Pushes listening end.')
+                    return
+            except:
+                if debug:
+                    traceback.print_exc(file=sys.stdout)
             time.sleep(sleep_interval)
 
     def listen_pushes_asynchronously(self, *args, **kwargs):

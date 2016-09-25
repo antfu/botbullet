@@ -1,9 +1,5 @@
 import sys
 import os
-pushbullet_path = os.path.abspath(os.path.join(__file__,'..','pushbullet.py'))
-if os.path.exists(pushbullet_path):
-    sys.path.insert(0, pushbullet_path)
-
 from .__version__ import __version__
 from .bullet import Botbullet
 from .bot import Bot

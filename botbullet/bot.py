@@ -13,9 +13,9 @@ DEFAULT_DEVICE_NAME = 'Botbullet'
 
 class Bot:
 
-    def __init__(self, api_token, device_name=None, module_configs=None, debug=False):
+    def __init__(self, api_token, device_name=None, modified_after=None, module_configs=None, debug=False):
         self.api_token = api_token
-        self.bullet = Botbullet(api_token)
+        self.bullet = Botbullet(api_token, modified_after=modified_after)
         self.device_name = device_name or DEFAULT_DEVICE_NAME
         self.device = self.bullet.get_or_create_device(self.device_name)
         self.modules = {}
