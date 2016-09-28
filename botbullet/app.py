@@ -1,5 +1,5 @@
 from .bot import Bot
-from biconfigs import BiConfigs, BiDict
+from biconfigs import Biconfigs, Bidict
 
 default_configs = {
     "api_token": "",
@@ -11,7 +11,7 @@ configs_path = 'configs.json'
 def InitConfigs(filepath=None):
     if not filepath:
         filepath = configs_path
-    return BiConfigs(filepath, default_value=default_configs)
+    return Biconfigs(path=filepath, default_value=default_configs)
 
 class App:
     def __init__(self, api_token, name='Botbullet', configures=None, debug=False):
@@ -24,10 +24,10 @@ class App:
         self.listening = False
 
         if not self.configs:
-            self.configs = BiConfigs(configs_path, default_value=default_configs)
+            self.configs = Biconfigs(path=configs_path, default_value=default_configs)
 
-        if not isinstance(self.configs, BiDict):
-            raise TypeError("configures should be biconfigs.BiDict")
+        if not isinstance(self.configs, Bidict):
+            raise TypeError("configures should be biconfigs.Bidict")
 
         self.module_configs = self.configs.get_set('modules_configs', {})
 

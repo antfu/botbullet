@@ -8,7 +8,7 @@ from .push import Push
 from .utils import IndexedDict
 from .errors import *
 from .app import App, InitConfigs
-from biconfigs import BiConfigs, BiDict
+from biconfigs import Biconfigs, Bidict
 
 Botbullet = Botbullet
 App = App

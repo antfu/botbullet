@@ -11,8 +11,4 @@ setup(name='botbullet',
       install_requires=[
         'biconfigs',
         'pushbullet.py'
-      ],
-      dependency_links=[
-         "git+https://github.com/antfu/biconfigs.git"
-      ],
-      zip_safe=False)
+      ])
